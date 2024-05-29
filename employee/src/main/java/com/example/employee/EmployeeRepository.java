@@ -2,7 +2,10 @@ package com.example.employee;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.stereotype.Repository;
 
-public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
-    Employee findByFirstNameAndAge(String firstName, Integer age);
+@Repository
+public interface EmployeeRepository extends JpaRepository<Employee, Integer>, QuerydslPredicateExecutor<Employee> {
+
 }

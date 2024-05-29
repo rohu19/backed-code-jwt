@@ -1,10 +1,11 @@
 package com.example.employee;
 
-
-
+import com.querydsl.core.BooleanBuilder;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
@@ -30,8 +31,34 @@ public class EmployeeService {
         return employeeRepository.findById(id);
     }
 
-    public Employee findByFirstNameAndAge(String firstName, Integer age) {
-        return employeeRepository.findByFirstNameAndAge(firstName, age);
+    public Page<Employee> searchByCriteria(EmployeeDTO employeeDTO) {
+
+        Pageable pageable = PageRequest.of(employeeDTO.getPage() != null ? employeeDTO.getPage() : 0,
+                employeeDTO.getSize() != null ?  employeeDTO.getSize() : 50, Sort.by("id").descending());
+
+        QEmployee qEmployee = QEmployee.employee;
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (employeeDTO.getFirstName() != null) {
+            builder.and(qEmployee.firstName.eq(employeeDTO.getFirstName()));
+        }
+
+        if (employeeDTO.getLastName() != null) {
+            builder.and(qEmployee.lastName.eq(employeeDTO.getLastName()));
+        }
+
+        if (employeeDTO.getAge() != null) {
+            builder.and(qEmployee.age.eq(employeeDTO.getAge()));
+        }
+
+        if(employeeDTO.getEducationDetails()!=null){
+            builder.and(qEmployee.educationDetails.eq(employeeDTO.getEducationDetails()));
+        }
+
+        if(employeeDTO.getRole()!=null){
+            builder.and(qEmployee.role.eq(employeeDTO.getRole()));
+        }
+        return employeeRepository.findAll(builder, pageable);
     }
 
     public Page<Employee> findAll(Pageable pageable) {

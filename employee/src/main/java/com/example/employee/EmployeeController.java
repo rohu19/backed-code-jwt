@@ -2,9 +2,6 @@ package com.example.employee;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -45,15 +42,21 @@ public class EmployeeController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Employee> findByFirstNameAndAge(
-            @RequestParam String firstName, @RequestParam Integer age) {
-        Employee employees = employeeService.findByFirstNameAndAge(firstName, age);
-        return new ResponseEntity<>(employees, HttpStatus.OK);
+    public ResponseEntity<Page<Employee>> searchByCriteria(@RequestBody EmployeeDTO employeeDTO) {
+        try {
+            Page<Employee> employees = employeeService.searchByCriteria(employeeDTO);
+            if (!employees.isEmpty()) {
+                return new ResponseEntity<>(employees, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception ex) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
-
-    @GetMapping("/page")
+   /* @GetMapping("/page")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<Employee>> findAll(
             @RequestParam(defaultValue = "0") int page,
@@ -61,7 +64,7 @@ public class EmployeeController {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Employee> employees = employeeService.findAll(pageable);
         return new ResponseEntity<>(employees, HttpStatus.OK);
-    }
+    }*/
 
     @PutMapping("/update/{id}")
     @PreAuthorize("isAuthenticated()")
